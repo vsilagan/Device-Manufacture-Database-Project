@@ -81,8 +81,6 @@ AS
 		FROM ChannelStockManifest
 		FULL JOIN ReturnedItemsChannel ON ChannelStockManifest.ProductSerialNumber = (SELECT ProductSerialNumber FROM ReturnedItems WHERE ReturnedItemsChannel.ReturnId = ReturnedItems.ReturnId)
 
-
-
 CREATE VIEW v_AvailableStores
 AS
 	SELECT StoreName as [Name], StoreDesignation as [Designation], SubDistributorId as [Sub-Distributor], ChannelPartnerZone as [Zone]

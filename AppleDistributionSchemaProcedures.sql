@@ -9,7 +9,10 @@ BEGIN
 	INSERT INTO ProductionCenterCosts values (@p_ProductionCenterId, @p_ProductId, 0, @p_initialCost)
 END
 
+exec proc_StartManufacturing 12, 100, 60
 ------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 CREATE PROCEDURE proc_ManufactureProduct
 (
@@ -32,6 +35,9 @@ BEGIN
 	END
 END
 
+exec proc_ManufactureProduct 13, 100, 20
+
+exec proc_ManufactureProduct 12, 100, 30
 ------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE proc_SendToWarehouse
@@ -48,6 +54,9 @@ BEGIN
 	INSERT INTO WarehouseStockManifest VALUES (@p_WarehouseId, @p_ProductSerialNumber, null, null)
 END
 
+exec proc_SendToWarehouse AP10013000000001, 200
+
+
 CREATE PROCEDURE proc_ReceiveWarehouse
 (
 	
@@ -60,6 +69,8 @@ BEGIN
 		SET ReceiveDate = GETDATE()
 		WHERE ProductSerialNumber = @p_ProductSerialNumber
 END
+
+exec proc_ReceiveWarehouse AP10013000000001, 200
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -86,7 +97,7 @@ BEGIN
 	end
 END
 
-exec proc_SendToDistributor AP10013000000000, 10000
+exec proc_SendToDistributor AP10013000000001, 10000
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -102,7 +113,7 @@ BEGIN
 		WHERE ProductSerialNumber = @p_productSerialNumber
 END
 
-exec proc_ReceiveDistributor AP10013000000000, 10000
+exec proc_ReceiveDistributor AP10013000000001, 10000
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -204,11 +215,11 @@ BEGIN
 	
 	
 	DECLARE @pnum int
-	SET @pnum = CAST(RIGHT(LEFT(@p_productSerialNumber, 5),3) as INT)
+	SET @pnum = CAST(RIGHT(LEFT(@p_productSerialNumber, 7),2) as INT)
 
 	DECLARE @count int
 	SET @count = (SELECT COUNT(ProductId) FROM StoreListing WHERE ProductId = @pnum GROUP BY ProductId)
-	IF (@count = 0)
+	IF (@count IS NULL)
 	BEGIN
 		DECLARE @ProductionCtr int
 		DECLARE @Country varchar(20)
@@ -219,7 +230,7 @@ BEGIN
 		SET @ProductionCtr = CAST(LEFT(RIGHT(@p_productSerialNumber,3),5) AS INT)
 		SET @Country = (SELECT CountryName FROM CountryImports WHERE CountryName = (SELECT WarehouseLocation
 																					FROM Warehouses
-																					WHERE CountryImports.ProductionCenterId = @ProductionCtr AND Warehouses.ProductionCenterId = @ProductionCtr))
+																					WHERE CountryImports.ProductionCenterId = 200 AND Warehouses.ProductionCenterId = 200))
 
 		SET @ImportPercentage = (SELECT ImportPercentage FROM CountryImports WHERE CountryName = @Country)
 		SET @IPrice = (SELECT InitialCost From ProductionCenterCosts WHERE ProductId = @pnum AND ProductionCenterId = @ProductionCtr)
